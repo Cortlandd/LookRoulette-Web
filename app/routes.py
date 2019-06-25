@@ -37,6 +37,7 @@ def makeup_transfer():
     # Load Graph
     ###
     #frozen_graph=os.path.join(app.root_path, 'app', 'output_graph.pb')
+    tf.reset_default_graph()
     frozen_graph="output_graph.pb"
     with tf.gfile.GFile(frozen_graph, "rb") as f:
         graph_def = tf.GraphDef()
@@ -63,6 +64,7 @@ def makeup_transfer():
     # Run session feeding input 
     sess = tf.Session(graph=graph)
     n = sess.run(Xs, feed_dict={X: X_img, Y: Y_img})
+    sess.close()
     n = deprocess(n)
 
     r = n[0]
