@@ -1,0 +1,1 @@
+_Folder to temporarily hold makeup transferred images._

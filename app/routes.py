@@ -1,9 +1,16 @@
 import os
 import requests
-from app import app, s3, S3_BUCKET, S3_LOCATION
-from flask import render_template, request, jsonify
-from werkzeug.utils import secure_filename
-from app.transfer import transfer_makeup
+from app import app
+from flask import render_template, request, jsonify, send_from_directory
+from app.util import preprocess, deprocess, randomString, send_image
+import random
+import string
+import tensorflow as tf
+import cv2
+import os
+import numpy as np
+from flask import jsonify
+from imageio import imread, imsave
 import random
 import string
 
@@ -12,60 +19,63 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/upload', methods=['POST'])
-def upload():
+@app.route('/api/v1/makeup_transfer')
+def makeup_transfer():
+
     nomakeup_file = request.files['nomakeup_file']
     makeup_file = request.files['makeup_file']
 
-    nomakeup_filename = secure_filename(nomakeup_file.filename)
-    makeup_filename = secure_filename(makeup_file.filename)
+    img_size = 256
 
-    nomakeup_extension = nomakeup_filename.split('.')[1]
-    makeup_extension = makeup_filename.split('.')[1]
+    nomakeup = cv2.resize(imread(nomakeup_file), (img_size, img_size))
+    makeup = cv2.resize(imread(makeup_file), (img_size, img_size))
 
-    ran_nomakeup = "nomakeup-"+randomString()+'.'+nomakeup_extension
-    ran_makeup = "makeup-"+randomString()+'.'+makeup_extension
+    X_img = np.expand_dims(preprocess(nomakeup), 0)
+    Y_img = np.expand_dims(preprocess(makeup), 0)
 
-    try:
-        s3.upload_fileobj(
-            nomakeup_file,
-            S3_BUCKET,
-            ran_nomakeup,
-            ExtraArgs={
-                "ACL": "public-read",
-                "ContentType": nomakeup_file.content_type
-            }
+    ###
+    # Load Graph
+    ###
+    #frozen_graph=os.path.join(app.root_path, 'app', 'output_graph.pb')
+    frozen_graph="output_graph.pb"
+    with tf.gfile.GFile(frozen_graph, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+    with tf.Graph().as_default() as graph:
+        tf.import_graph_def(
+            graph_def,
+            input_map=None,
+            return_elements=None,
+            name=""
         )
 
-        s3.upload_fileobj(
-            makeup_file,
-            S3_BUCKET,
-            ran_makeup,
-            ExtraArgs={
-                "ACL": "public-read",
-                "ContentType": makeup_file.content_type
-            }
-        )
-    except Exception as e:
-        return e
+    ###
+    # Get tensors by name
+    # X:0 = Input
+    # Y:0 = Input
+    # generator/xs:0 = Output
+    ###
+    X = graph.get_tensor_by_name('X:0') # Makeup Image
+    Y = graph.get_tensor_by_name('Y:0') # No Makeup Image
+    Xs = graph.get_tensor_by_name('generator/xs:0')
 
-    result = {
-        'nomakeup-image': S3_LOCATION+ran_nomakeup,
-        'makeup-image': S3_LOCATION+ran_makeup
-    }
+    # Run session feeding input 
+    sess = tf.Session(graph=graph)
+    n = sess.run(Xs, feed_dict={X: X_img, Y: Y_img})
+    n = deprocess(n)
 
-    return jsonify(result), 201
+    r = n[0]
 
-@app.route('/submit/nomakeup=<nomakeupURL>/makeup=<makeupURL>', methods=['POST'])
-def submit_images(nomakeupURL, makeupURL):
+    result_img_name = 'transfer-'+randomString()+'.png'
 
-    return transfer_makeup(nomakeup_img_url=nomakeupURL, makeup_img_url=makeupURL)
+    imsave(app.config['UPLOAD_FOLDER']+result_img_name, (r * 255).astype(np.uint8))
 
+    result_img = app.config['UPLOAD_FOLDER']+result_img_name
+
+    return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=result_img_name)
+    
 @app.route('/')
 def index():
     return render_template('index.html')
 
-def randomString(stringLength=10):
-    """Generate a random string of fixed length """
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(stringLength))
