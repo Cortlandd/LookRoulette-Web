@@ -1,6 +1,6 @@
 import os
 import requests
-from app import app
+from app import app, s3, S3_BUCKET, S3_LOCATION
 from flask import render_template, request, jsonify, send_from_directory, after_this_request
 from app.util import preprocess, deprocess, randomString
 import random
@@ -15,8 +15,6 @@ import random
 import string
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
-
-result_img = ""
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -75,7 +73,29 @@ def makeup_transfer():
 
     result_img = app.config['UPLOAD_FOLDER']+result_img_name
 
-    return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=result_img_name, as_attachment=True)
+    result = {}
+
+    try:
+        s3.upload_file(
+            result_img,
+            S3_BUCKET,
+            result_img_name,
+            ExtraArgs={
+                "ACL": "public-read"
+            }
+        )
+        result = {
+            'transferImage': S3_LOCATION+result_img_name
+        }
+    except Exception as e:
+        result = {
+            'error': e
+        }
+
+    if result_img is not None:
+        os.remove(result_img)
+    
+    return jsonify(result)
     
 @app.route('/')
 def index():
