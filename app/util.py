@@ -1,6 +1,7 @@
 import random
 import string
 from flask import send_from_directory
+from app import app
 import os
 
 def preprocess(img):
@@ -21,11 +22,3 @@ def randomString(stringLength=10):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
-
-def send_image(img):
-    if img is not None:
-        send_from_directory('app/imgs', img, as_attachment=True)
-        os.remove('app/imgs/'+img)
-    else:
-        return 
-    

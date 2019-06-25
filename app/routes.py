@@ -1,8 +1,8 @@
 import os
 import requests
 from app import app
-from flask import render_template, request, jsonify, send_from_directory
-from app.util import preprocess, deprocess, randomString, send_image
+from flask import render_template, request, jsonify, send_from_directory, after_this_request
+from app.util import preprocess, deprocess, randomString
 import random
 import string
 import tensorflow as tf
@@ -15,6 +15,8 @@ import random
 import string
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+
+result_img = ""
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -73,7 +75,7 @@ def makeup_transfer():
 
     result_img = app.config['UPLOAD_FOLDER']+result_img_name
 
-    return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=result_img_name)
+    return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=result_img_name, as_attachment=True)
     
 @app.route('/')
 def index():
