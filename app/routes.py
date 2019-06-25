@@ -98,6 +98,7 @@ def makeup_transfer():
     return jsonify(result)
     
 @app.route('/')
+@app.route('/index')
 def index():
     return render_template('index.html')
 
