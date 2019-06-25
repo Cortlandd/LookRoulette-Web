@@ -20,3 +20,8 @@ _The backend to Look Roulette. To allow transferring of makeup from one image to
 
 # WAYYY down the line Roadmap
 - [ ] Live makeup transfer
+
+# Important documents to note
+- https://stackoverflow.com/questions/49469764/how-to-use-opencv-with-heroku/51004957#51004957
+- https://github.com/jeromevonk/flask_face_detection | Sample repo using opencv and heroku
+- https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-apt | Used to install linux deps for python-opencv
