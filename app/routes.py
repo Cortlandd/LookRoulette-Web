@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/api/v1/makeup_transfer')
+@app.route('/api/v1/makeup_transfer', methods=['POST'])
 def makeup_transfer():
 
     nomakeup_file = request.files['nomakeup_file']
