@@ -22,13 +22,13 @@ def allowed_file(filename):
 @app.route('/api/v1/makeup_transfer', methods=['POST'])
 def makeup_transfer():
 
-    nomakeup_file = request.files['nomakeup_file']
-    makeup_file = request.files['makeup_file']
+    nomakeup_url = request.form['nomakeup_url']
+    makeup_url = request.form['makeup_url']
 
     img_size = 256
 
-    nomakeup = cv2.resize(imread(nomakeup_file), (img_size, img_size))
-    makeup = cv2.resize(imread(makeup_file), (img_size, img_size))
+    nomakeup = cv2.resize(imread(nomakeup_url), (img_size, img_size))
+    makeup = cv2.resize(imread(makeup_url), (img_size, img_size))
 
     X_img = np.expand_dims(preprocess(nomakeup), 0)
     Y_img = np.expand_dims(preprocess(makeup), 0)
