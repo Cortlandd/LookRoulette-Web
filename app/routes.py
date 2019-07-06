@@ -22,8 +22,8 @@ def allowed_file(filename):
 @app.route('/api/v1/makeup_transfer', methods=['POST'])
 def makeup_transfer():
 
-    nomakeup_url = request.form['nomakeup_url']
-    makeup_url = request.form['makeup_url']
+    nomakeup_url = request.args['nomakeup_url']
+    makeup_url = request.args['makeup_url']
 
     img_size = 256
 
@@ -103,4 +103,3 @@ def makeup_transfer():
 @app.route('/index')
 def index():
     return render_template('index.html')
-
