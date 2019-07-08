@@ -1,7 +1,7 @@
 import random
 import string
 from flask import send_from_directory
-from app import app
+from app import app, graph
 import os
 from imageio import imread, imsave
 from app import app, s3, S3_BUCKET, S3_LOCATION
@@ -38,30 +38,12 @@ def transfer(nomakeup_url, makeup_url):
     Y_img = np.expand_dims(preprocess(makeup), 0)
 
     ###
-    # Load Graph
-    ###
-    #frozen_graph=os.path.join(app.root_path, 'app', 'output_graph.pb')
-    # May regret this
-    #tf.reset_default_graph()
-    frozen_graph="output_graph.pb"
-    with tf.gfile.GFile(frozen_graph, "rb") as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-
-    with tf.Graph().as_default() as graph:
-        tf.import_graph_def(
-            graph_def,
-            input_map=None,
-            return_elements=None,
-            name=""
-        )
-
-    ###
     # Get tensors by name
     # X:0 = Input
     # Y:0 = Input
     # generator/xs:0 = Output
     ###
+    # Use graph from app
     X = graph.get_tensor_by_name('X:0') # Makeup Image
     Y = graph.get_tensor_by_name('Y:0') # No Makeup Image
     Xs = graph.get_tensor_by_name('generator/xs:0')
@@ -96,5 +78,4 @@ def transfer(nomakeup_url, makeup_url):
     except Exception as e:
         result = str(e)
 
-    print(result)
     return result
