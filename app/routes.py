@@ -13,6 +13,7 @@ from flask import jsonify
 from imageio import imread, imsave
 import random
 import string
+from werkzeug.urls import url_unquote
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
@@ -24,6 +25,9 @@ def makeup_transfer():
 
     nomakeup_url = request.args['nomakeup_url']
     makeup_url = request.args['makeup_url']
+
+    url_unquote(nomakeup_url, charset='utf-8')
+    url_unquote(makeup_url, charset='utf-8')
 
     img_size = 256
 
@@ -103,4 +107,3 @@ def makeup_transfer():
 @app.route('/index')
 def index():
     return render_template('index.html')
-
