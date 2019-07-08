@@ -24,7 +24,7 @@ def load_graph():
     # Load Graph
     ###
     # May regret this
-    # tf.reset_default_graph()
+    tf.reset_default_graph()
     frozen_graph="output_graph.pb"
     with tf.gfile.GFile(frozen_graph, "rb") as f:
         graph_def = tf.GraphDef()
