@@ -28,7 +28,7 @@ def load_graph():
     ###
     # May regret this
     tf.reset_default_graph()
-    frozen_graph="output_graph.pb"
+    frozen_graph="optimized_graph.pb"
     with tf.gfile.GFile(frozen_graph, "rb") as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
