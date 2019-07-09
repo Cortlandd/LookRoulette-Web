@@ -1,7 +1,7 @@
 import random
 import string
 from flask import send_from_directory
-from app import app, graph
+from app import app, global_graph
 import os
 from imageio import imread, imsave
 from app import app, s3, S3_BUCKET, S3_LOCATION
@@ -44,12 +44,12 @@ def transfer(nomakeup_url, makeup_url):
     # generator/xs:0 = Output
     ###
     # Use graph from app
-    X = graph.get_tensor_by_name('X:0') # Makeup Image
-    Y = graph.get_tensor_by_name('Y:0') # No Makeup Image
-    Xs = graph.get_tensor_by_name('generator/xs:0')
+    X = global_graph.get_tensor_by_name('X:0') # Makeup Image
+    Y = global_graph.get_tensor_by_name('Y:0') # No Makeup Image
+    Xs = global_graph.get_tensor_by_name('generator/xs:0')
 
     # Run session feeding input 
-    sess = tf.Session(graph=graph)
+    sess = tf.Session(graph=global_graph)
     n = sess.run(Xs, feed_dict={X: X_img, Y: Y_img})
     sess.close()
     n = deprocess(n)

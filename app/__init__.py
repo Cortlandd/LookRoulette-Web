@@ -18,7 +18,10 @@ s3 = boto3.client(
     aws_secret_access_key=S3_SECRET
 )
 
+global_graph = None
+
 def load_graph():
+    global global_graph
     print("Initialized Graph")
     ###
     # Load Graph
@@ -37,9 +40,11 @@ def load_graph():
             return_elements=None,
             name=""
         )
-    return graph
 
-graph = load_graph()
+    global_graph = graph
+    
+
+load_graph()
 
 # This has to be at the bottom for some reason
 from app import routes
