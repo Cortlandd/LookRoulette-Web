@@ -3,8 +3,8 @@ import os
 import boto3, botocore
 
 S3_BUCKET                 = "lookru-bucket"
-S3_KEY                    = "AKIAJNAFT2ZYDUJ7DBFA"
-S3_SECRET                 = "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"
+S3_KEY                    = "<KEY HERE>"
+S3_SECRET                 = "<SECRET HERE>"
 S3_LOCATION = 'https://{}.s3.us-east-2.amazonaws.com/'.format(S3_BUCKET)
 
 app = Flask(__name__)
